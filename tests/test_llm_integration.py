@@ -10,8 +10,7 @@ from querdex.indexing.tree_builder import AdaptiveTreeBuilder
 from querdex.llm.fake_client import FakeLLMClient
 from querdex.query.answering import AnswerGenerator, RetrievedChunk
 from querdex.query.tiered_search import TieredSearchEngine
-from querdex.schemas import QueryAnalysis, SearchCandidate, Section, SourceNode, TreeNode
-
+from querdex.schemas import Section, SourceNode, TreeNode
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -164,7 +163,7 @@ class TestTieredSearchTier1WithLLM:
         scores = engine._tier1_batch_score("revenue", nodes)
         # Heuristic: should still return 3 scored tuples
         assert len(scores) == 3
-        for node, score in scores:
+        for _node, score in scores:
             assert 0.0 <= score <= 1.0
 
     def test_no_tier1_client_uses_heuristic(self) -> None:
