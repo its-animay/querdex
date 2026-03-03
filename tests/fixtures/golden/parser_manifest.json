@@ -1,0 +1,37 @@
+[
+  {
+    "file": "sample.txt",
+    "doc_id": "gold_text",
+    "min_sections": 2,
+    "contains": "Revenue increased",
+    "source_format": "text"
+  },
+  {
+    "file": "sample.md",
+    "doc_id": "gold_markdown",
+    "min_sections": 1,
+    "contains": "Tier 1 pruning",
+    "source_format": "markdown"
+  },
+  {
+    "file": "sample.html",
+    "doc_id": "gold_html",
+    "min_sections": 2,
+    "contains": "Graph Traversal",
+    "source_format": "html"
+  },
+  {
+    "file": "sample.csv",
+    "doc_id": "gold_csv",
+    "min_sections": 2,
+    "contains": "CSV schema columns",
+    "source_format": "csv"
+  },
+  {
+    "file": "sample.py",
+    "doc_id": "gold_code",
+    "min_sections": 2,
+    "contains": "liabilities",
+    "source_format": "code_py"
+  }
+]

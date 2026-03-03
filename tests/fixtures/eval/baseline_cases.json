@@ -1,0 +1,17 @@
+[
+  {
+    "query": "What is revenue in Q3?",
+    "expected_keywords": ["revenue", "Q3"],
+    "intent": "single_doc"
+  },
+  {
+    "query": "Compare liabilities across documents",
+    "expected_keywords": ["compare", "liabilities"],
+    "intent": "multi_doc"
+  },
+  {
+    "query": "What cites Section 2.1?",
+    "expected_keywords": ["cites", "Section 2.1"],
+    "intent": "graph"
+  }
+]

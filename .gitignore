@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual env & tools
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime data
+index_store/
+*.sqlite
+*.db
+
+# OS
+.DS_Store
+
+# Documents / paper drafts (not source code)
+*.pdf
+*.tex
+*.docx
+
+# Project management / planning
+PROJECT_PLAN.md
+TASK_LIST.md
+RUNBOOK.md
+
+# Secrets
+.env
+.env.*
+!.env.example

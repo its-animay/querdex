@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  querdex:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    environment:
+      QUERDEX_DB: /data/querdex.db
+      QUERDEX_OCR_ENABLED: "false"
+    volumes:
+      - ../index_store:/data
+      - ..:/workspace
+    working_dir: /workspace
+    command: ["--help"]

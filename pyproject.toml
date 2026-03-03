@@ -1,0 +1,63 @@
+[project]
+name = "querdex"
+version = "0.1.0"
+description = "Reasoning-first document intelligence system"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Your Name", email = "you@example.com" }]
+keywords = ["document", "indexing", "retrieval", "llm", "rag"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Text Processing :: Indexing",
+]
+dependencies = [
+  "pydantic>=2.9.0",
+  "python-docx>=1.1.2",
+  "beautifulsoup4>=4.12.3",
+  "markdown-it-py>=3.0.0",
+  "networkx>=3.4.2",
+  "pymupdf>=1.24.0",
+]
+
+[project.optional-dependencies]
+anthropic = [
+  "anthropic>=0.49.0",
+]
+openai = [
+  "openai>=1.67.0",
+]
+dev = [
+  "pytest>=8.3.3",
+  "ruff>=0.8.6",
+  "mypy>=1.13.0",
+]
+
+[project.scripts]
+querdex = "querdex.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
