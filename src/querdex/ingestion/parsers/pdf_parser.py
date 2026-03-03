@@ -41,7 +41,7 @@ class PDFParser:
 
     def parse(self, path: Path, doc_id: str) -> list[Section]:
         try:
-            import fitz  # type: ignore[import-not-found]
+            import fitz  # type: ignore[import-untyped]
         except ImportError as exc:
             msg = "PyMuPDF is required for PDF parsing. Install pymupdf to enable PDF support."
             raise RuntimeError(msg) from exc

@@ -61,3 +61,11 @@ select = ["E", "F", "I", "UP", "B"]
 python_version = "3.11"
 strict = true
 mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["openai", "openai.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["anthropic", "anthropic.*"]
+ignore_missing_imports = true
