@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+from querdex.extraction.models import ExtractionRun
 from querdex.indexing import EntityMapUpdater
 from querdex.schemas import EntityRef, IndexingResult, QueryResult, Section, TreeNode
 from querdex.storage.graph_store import NetworkXGraphStore
@@ -17,7 +18,7 @@ class SQLiteStore:
         self._conn = sqlite3.connect(self.db_path)
         self._conn.row_factory = sqlite3.Row
         self._entity_map_updater = EntityMapUpdater()
-        self._graph_store = NetworkXGraphStore(Path(self.db_path).with_suffix(".graph.pkl"))
+        self._graph_store = NetworkXGraphStore(Path(self.db_path).with_suffix(".graph.json"))
         self._init_schema()
 
     def close(self) -> None:
@@ -155,6 +156,15 @@ class SQLiteStore:
               value_json TEXT NOT NULL,
               created_at TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS extraction_runs (
+              run_id TEXT PRIMARY KEY,
+              doc_id TEXT NOT NULL,
+              run_json TEXT NOT NULL,
+              created_at TEXT NOT NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_extraction_runs_doc_id ON extraction_runs(doc_id);
             """
         )
         self._conn.commit()
@@ -694,8 +704,33 @@ class SQLiteStore:
         self._conn.execute("DELETE FROM query_cache WHERE doc_id = ?", (doc_id,))
         self._conn.commit()
 
+    def save_extraction_run(self, run: ExtractionRun) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO extraction_runs(run_id, doc_id, run_json, created_at) VALUES (?, ?, ?, ?)",
+            (run.run_id, run.doc_id, run.model_dump_json(), self._now()),
+        )
+        self._conn.commit()
+
+    def get_extraction_run(self, run_id: str) -> ExtractionRun:
+        row = self._conn.execute(
+            "SELECT run_json FROM extraction_runs WHERE run_id = ?",
+            (run_id,),
+        ).fetchone()
+        if row is None:
+            msg = f"Extraction run not found: {run_id}"
+            raise KeyError(msg)
+        return ExtractionRun.model_validate_json(str(row["run_json"]))
+
+    def extraction_runs_for_doc(self, doc_id: str, limit: int = 20) -> list[ExtractionRun]:
+        rows = self._conn.execute(
+            "SELECT run_json FROM extraction_runs WHERE doc_id = ? ORDER BY created_at DESC LIMIT ?",
+            (doc_id, limit),
+        ).fetchall()
+        return [ExtractionRun.model_validate_json(str(row["run_json"])) for row in rows]
+
     def delete_document(self, doc_id: str) -> None:
         # HI-057b: cleanup across all stores.
+        self._conn.execute("DELETE FROM extraction_runs WHERE doc_id = ?", (doc_id,))
         self._conn.execute("DELETE FROM tree_versions WHERE doc_id = ?", (doc_id,))
         self._conn.execute("DELETE FROM sections WHERE doc_id = ?", (doc_id,))
         self._conn.execute("DELETE FROM entity_map WHERE doc_id = ?", (doc_id,))

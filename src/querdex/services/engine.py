@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from querdex.adaptive import AdaptiveUpdater
+from querdex.extraction import ExtractionRun, ExtractionTask, StructuredExtractor
 
 if TYPE_CHECKING:
     from querdex.llm import LLMClient
@@ -63,6 +64,7 @@ class QuerdexEngine:
         self.answer_generator = AnswerGenerator(llm_client=llm_client)
         self.graph_walker = GraphWalker()
         self.adaptive_updater = AdaptiveUpdater(llm_client=llm_client)
+        self.extractor = StructuredExtractor(llm_client=llm_client)
         self.tree_quality = TreeQualityEvaluator()
         self.health_checker = HealthChecker()
         self.logger = StructuredLogger("querdex.engine")
@@ -242,6 +244,25 @@ class QuerdexEngine:
             self._run_adaptive_updates({source.doc_id for source in result.source_nodes} | {doc_id})
             self._query_idempotency_cache[idempotency_key] = result.model_copy(deep=True)
             return result
+
+    def extract_document(self, doc_id: str, task: ExtractionTask, *, passes: int = 1) -> ExtractionRun:
+        """Run schema-by-example structured extraction over an indexed document."""
+        with self.logger.span("extract_document", doc_id=doc_id):
+            sections = self.store.sections_for_doc(doc_id)
+            if not sections:
+                msg = f"Document not found or has no stored sections: {doc_id}"
+                raise KeyError(msg)
+            run = self.extractor.extract(doc_id=doc_id, sections=sections, task=task, passes=passes)
+            self.store.save_extraction_run(run)
+            self.logger.info(
+                "extract_completed",
+                doc_id=doc_id,
+                run_id=run.run_id,
+                extractions=len(run.extractions),
+                llm_calls=run.stats.llm_calls,
+                unaligned=run.stats.unaligned_count,
+            )
+            return run
 
     def health(self) -> dict[str, Any]:
         status = self.health_checker.check(self.store)
