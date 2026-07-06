@@ -1,7 +1,8 @@
 # Querdex
 
 [![PyPI version](https://img.shields.io/pypi/v/querdex)](https://pypi.org/project/querdex/)
-[![Downloads](https://img.shields.io/pypi/dm/querdex)](https://pypistats.org/packages/querdex)
+[![Total downloads](https://static.pepy.tech/badge/querdex)](https://pepy.tech/projects/querdex)
+[![Downloads/month](https://img.shields.io/pypi/dm/querdex)](https://pypistats.org/packages/querdex)
 [![Python versions](https://img.shields.io/pypi/pyversions/querdex)](https://pypi.org/project/querdex/)
 [![CI](https://github.com/its-animay/querdex/actions/workflows/ci.yml/badge.svg)](https://github.com/its-animay/querdex/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
