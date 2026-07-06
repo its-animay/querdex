@@ -33,3 +33,4 @@ RUNBOOK.md
 .env
 .env.*
 !.env.example
+test_api_key.py

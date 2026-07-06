@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import pickle
+import json
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -8,7 +8,12 @@ import networkx as nx  # type: ignore[import-untyped]
 
 
 class NetworkXGraphStore:
-    """Development graph adapter with pickle persistence."""
+    """Development graph adapter with JSON (node-link) persistence.
+
+    JSON is used instead of pickle so that a shared or tampered graph file
+    cannot execute code on load. Unreadable or legacy pickle files are
+    ignored; the graph is derived data and is rebuilt on the next index pass.
+    """
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
@@ -18,15 +23,20 @@ class NetworkXGraphStore:
     def _load(self) -> nx.DiGraph:
         if not self.path.exists():
             return nx.DiGraph()
-        with self.path.open("rb") as fh:
-            loaded = pickle.load(fh)
+        try:
+            with self.path.open("r", encoding="utf-8") as fh:
+                data = json.load(fh)
+            loaded = nx.node_link_graph(data, directed=True, edges="edges")
+        except (json.JSONDecodeError, UnicodeDecodeError, KeyError, ValueError, TypeError):
+            return nx.DiGraph()
         if not isinstance(loaded, nx.DiGraph):
             return nx.DiGraph()
         return loaded
 
     def save(self) -> None:
-        with self.path.open("wb") as fh:
-            pickle.dump(self.graph, fh)
+        data = nx.node_link_data(self.graph, edges="edges")
+        with self.path.open("w", encoding="utf-8") as fh:
+            json.dump(data, fh)
 
     def upsert_document_graph(
         self,

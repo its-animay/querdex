@@ -70,23 +70,13 @@ def test_ingestion_audio_parser_uses_sidecar_transcript(tmp_path: Path) -> None:
 
 
 def test_ingestion_url_parser_fetches_and_normalizes(monkeypatch, tmp_path: Path) -> None:
-    html = b"<html><body><h1>Title</h1><p>Revenue is 120.</p></body></html>"
+    html = "<html><body><h1>Title</h1><p>Revenue is 120.</p></body></html>"
 
-    class _Resp:
-        def __enter__(self) -> _Resp:
-            return self
+    def _fake_fetch_html(url, timeout=10.0):  # noqa: ANN001, ANN202
+        del url, timeout
+        return html
 
-        def __exit__(self, exc_type, exc, tb) -> None:
-            return None
-
-        def read(self) -> bytes:
-            return html
-
-    def _fake_urlopen(req, timeout):  # noqa: ANN001, ANN202
-        del req, timeout
-        return _Resp()
-
-    monkeypatch.setattr("querdex.ingestion.parsers.url_parser.urlopen", _fake_urlopen)
+    monkeypatch.setattr("querdex.ingestion.parsers.url_parser._fetch_html", _fake_fetch_html)
 
     url_file = tmp_path / "target.url"
     url_file.write_text("https://example.com/report", encoding="utf-8")

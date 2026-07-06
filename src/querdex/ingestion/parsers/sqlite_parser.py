@@ -6,6 +6,12 @@ from pathlib import Path
 from querdex.schemas import Section
 
 
+def _quote_identifier(name: str) -> str:
+    # Table names come from the (untrusted) input database's sqlite_master;
+    # identifiers cannot be bound as parameters, so escape and quote them.
+    return '"' + name.replace('"', '""') + '"'
+
+
 class SQLiteParser:
     source_format = "sqlite"
 
@@ -24,7 +30,7 @@ class SQLiteParser:
             sections: list[Section] = []
             page = 1
             for table in table_names:
-                info_rows = conn.execute(f"PRAGMA table_info('{table}')").fetchall()
+                info_rows = conn.execute(f"PRAGMA table_info({_quote_identifier(table)})").fetchall()
                 columns = [str(row["name"]) for row in info_rows]
                 sections.append(
                     Section(
@@ -38,7 +44,7 @@ class SQLiteParser:
                 )
                 page += 1
 
-                preview = conn.execute(f"SELECT * FROM '{table}' LIMIT 25").fetchall()
+                preview = conn.execute(f"SELECT * FROM {_quote_identifier(table)} LIMIT 25").fetchall()
                 for idx, row in enumerate(preview, start=1):
                     text = "; ".join(f"{key}={row[key]}" for key in row.keys())
                     sections.append(
