@@ -1,5 +1,11 @@
 # Querdex
 
+[![PyPI version](https://img.shields.io/pypi/v/querdex)](https://pypi.org/project/querdex/)
+[![Downloads](https://img.shields.io/pypi/dm/querdex)](https://pypistats.org/packages/querdex)
+[![Python versions](https://img.shields.io/pypi/pyversions/querdex)](https://pypi.org/project/querdex/)
+[![CI](https://github.com/its-animay/querdex/actions/workflows/ci.yml/badge.svg)](https://github.com/its-animay/querdex/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 **Reasoning-first document intelligence system.**
 
 Querdex indexes any document into a hierarchical tree, then uses a two-tier LLM search to answer questions with cited sources. It works without an LLM (keyword heuristics), and optionally plugs in Anthropic or OpenAI for higher-quality results.
@@ -12,6 +18,7 @@ Querdex indexes any document into a hierarchical tree, then uses a two-tier LLM 
 - [Installation](#installation)
 - [Quick Start (CLI)](#quick-start-cli)
 - [LLM Setup](#llm-setup)
+- [Structured Extraction](#structured-extraction)
 - [CLI Reference](#cli-reference)
 - [Python API](#python-api)
 - [Supported File Types](#supported-file-types)
@@ -182,6 +189,54 @@ export QUERDEX_LLM_TIER2_MODEL=gpt-4o         # powerful
 
 ---
 
+## Structured Extraction
+
+Pull structured facts out of any indexed document — with **source grounding**: every extraction carries the exact section, page, and character span it came from, so nothing is silently hallucinated.
+
+The schema is defined **by example**, not by code. Describe what you want and (optionally) show one or two examples:
+
+```bash
+querdex extract --doc-id demo \
+  --prompt "Extract revenue figures and executive names" \
+  --examples examples.json \
+  --html review.html
+```
+
+`examples.json`:
+```json
+[
+  {
+    "text": "Alice Chen reported revenue of $5M in Q1.",
+    "extractions": [
+      {"extraction_class": "metric", "extraction_text": "revenue of $5M", "attributes": {"period": "Q1"}},
+      {"extraction_class": "person", "extraction_text": "Alice Chen"}
+    ]
+  }
+]
+```
+
+The classes and attribute keys in your examples define the output schema. Every result is aligned back to the source text (exact → fuzzy matching); model output that cannot be located is kept but flagged `unaligned` so you can review it instead of trusting it.
+
+`--html` writes a self-contained review page: the full document with color-coded highlights per extraction class, toggleable legend, attribute tooltips, and a click-to-jump list of all extractions.
+
+Long documents are chunked and processed in parallel; use `--passes 2` to trade extra LLM calls for higher recall. Without an LLM configured, extraction degrades to literal matching of your example texts.
+
+Python API:
+
+```python
+from querdex.extraction import ExtractionTask, ExtractionExample, ExampleExtraction
+
+task = ExtractionTask(
+    description="Extract revenue figures and executive names",
+    examples=[...],
+)
+run = engine.extract_document("demo", task, passes=1)
+for e in run.extractions:
+    print(e.extraction_class, repr(e.extraction_text), e.section_id, e.char_start, e.alignment)
+```
+
+---
+
 ## CLI Reference
 
 ```
@@ -192,6 +247,7 @@ querdex [--db PATH] <command> [options]
 |---------|-------------|
 | `index <file>` | Index a document. Auto-detects format from extension. |
 | `query` | Query an indexed document. |
+| `extract` | Run schema-by-example structured extraction over an indexed document. |
 | `delete` | Remove a document and all its data from the store. |
 
 ### `index`
@@ -216,6 +272,20 @@ querdex query --doc-id ID --query TEXT [--session-id ID]
 | `--doc-id` | required | Document to query |
 | `--query` | required | Natural language question |
 | `--session-id` | none | Enables multi-turn context (pass same ID across turns) |
+
+### `extract`
+
+```
+querdex extract --doc-id ID --prompt TEXT [--examples FILE] [--passes N] [--html FILE]
+```
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--doc-id` | required | Document to extract from |
+| `--prompt` | required | Natural language description of what to extract |
+| `--examples` | none | JSON file with few-shot examples (defines the output schema) |
+| `--passes` | `1` | Extraction passes; more passes improve recall |
+| `--html` | none | Write an interactive HTML review page to this path |
 
 ### `delete`
 

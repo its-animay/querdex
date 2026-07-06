@@ -5,12 +5,12 @@ import asyncio
 import json
 import sys
 
-from hyperindex.evaluation import EvaluationHarness, KPIDashboardBuilder, RetrievalMetricsHarness
-from hyperindex.services import build_engine
+from querdex.evaluation import EvaluationHarness, KPIDashboardBuilder, RetrievalMetricsHarness
+from querdex.services import build_engine
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run HyperIndex evaluation and release gate checks.")
+    parser = argparse.ArgumentParser(description="Run querdex evaluation and release gate checks.")
     parser.add_argument("--db", required=True, help="SQLite database path")
     parser.add_argument("--doc-path", required=True, help="Path to document to index for the benchmark run")
     parser.add_argument("--doc-id", required=True, help="Document id used for benchmark queries")

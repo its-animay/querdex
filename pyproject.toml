@@ -1,11 +1,11 @@
 [project]
 name = "querdex"
-version = "0.1.0"
+version = "0.2.0"
 description = "Reasoning-first document intelligence system"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Animay Tiwari", email = "animaytiwari@outlook.com" }]
 keywords = ["document", "indexing", "retrieval", "llm", "rag"]
 classifiers = [
   "Development Status :: 3 - Alpha",
